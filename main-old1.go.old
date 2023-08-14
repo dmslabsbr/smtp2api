@@ -1,0 +1,121 @@
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"net"
+	"net/http"
+	"strings"
+)
+
+var senderEmail string
+var recipientEmail string
+
+func sendEmailAPI(from, to, message string) {
+	// Substitua pelas informações reais da sua API
+	apiURL := "https://example.com/send-email"
+
+	// Personalize a mensagem com os endereços do remetente e destinatário
+	fullMessage := fmt.Sprintf("From: %s\r\nTo: %s\r\n\r\n%s", from, to, message)
+
+	payload := strings.NewReader(fullMessage)
+
+	req, _ := http.NewRequest("POST", apiURL, payload)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		fmt.Println("Error sending email:", err)
+		return
+	}
+	defer res.Body.Close()
+
+	fmt.Println("Email sent successfully")
+}
+
+func handleConnection(conn net.Conn) {
+	defer conn.Close()
+
+	reader := bufio.NewReader(conn)
+	writer := bufio.NewWriter(conn)
+
+	// Send SMTP banner
+	writer.WriteString("220 Welcome to My SMTP Server\r\n")
+	writer.Flush()
+
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Error reading:", err)
+			return
+		}
+
+		// Process SMTP commands
+		parts := strings.Fields(line)
+		if len(parts) > 0 {
+			command := strings.ToUpper(parts[0])
+			fmt.Println("Received command:", command)
+			switch command {
+			case "HELO", "EHLO":
+				writer.WriteString("250 Hello " + parts[1] + "\r\n")
+				writer.Flush()
+			case "MAIL":
+				writer.WriteString("250 Ok\r\n")
+				writer.Flush()
+				senderEmail = parts[1] // Armazena o e-mail do remetente
+			case "RCPT":
+				writer.WriteString("250 Ok\r\n")
+				writer.Flush()
+				recipientEmail = parts[1] // Armazena o e-mail do destinatário
+			case "DATA":
+				writer.WriteString("354 End data with <CRLF>.<CRLF>\r\n")
+				writer.Flush()
+
+				// Read message data
+				messageData := ""
+				for {
+					line, err := reader.ReadString('\n')
+					if err != nil {
+						fmt.Println("Error reading:", err)
+						return
+					}
+					if line == ".\r\n" {
+						// Utiliza os endereços armazenados para personalizar a mensagem
+						sendEmailAPI(senderEmail, recipientEmail, messageData)
+						writer.WriteString("250 Ok: queued\r\n")
+						writer.Flush()
+						break
+					}
+					messageData += line
+				}
+			case "QUIT":
+				writer.WriteString("221 Bye\r\n")
+				writer.Flush()
+				return
+			default:
+				writer.WriteString("500 Command not recognized\r\n")
+				writer.Flush()
+			}
+		}
+	}
+}
+
+func main() {
+	listener, err := net.Listen("tcp", ":25")
+	if err != nil {
+		fmt.Println("Error starting server:", err)
+		return
+	}
+	defer listener.Close()
+
+	fmt.Println("SMTP server listening on :25")
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection:", err)
+			continue
+		}
+		go handleConnection(conn)
+	}
+}
