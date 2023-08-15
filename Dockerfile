@@ -5,10 +5,10 @@ LABEL author="Daniel S"
 WORKDIR /go/src/smtp2api
 
 # Define e reseta  env
-ENV http_proxy=""
-ENV https_proxy="" 
-ENV HTTP_PROXY="" 
-ENV HTTPS_PROXY=""
+#ENV http_proxy=""
+#ENV https_proxy="" 
+#ENV HTTP_PROXY="" 
+#ENV HTTPS_PROXY=""
 
 # pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
 COPY go.mod go.sum ./

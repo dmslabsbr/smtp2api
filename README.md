@@ -33,7 +33,7 @@ docker build -t smtp2api .
 ## Documentation
 The documentation for smtp2api is available at the following link:
 
-https://github.com/bravocode/smtp2api/blob/master/README.md
+https://github.com/dmslabsbr/smtp2api/blob/master/README.md
 
 
 ## Contributions

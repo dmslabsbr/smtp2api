@@ -15,9 +15,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"net"
 	"strings"
 	//"html/template"
 )
+
+// Contantes
+const app_name = "smtp2api"
+const app_version = "1.0"
+const app_dev_path = `D:\go\apps_src\smtp2api`
 
 // The Backend implements SMTP server methods.
 type Backend struct{}
@@ -44,11 +50,13 @@ var globalSegredos segredosType
 
 
 // pega segredos das variaveis de ambiente
-func getSegredos() {
+func getSegredos(paraExecucao bool) {
 	password, exists := os.LookupEnv("BREVO_APIKEY")
 	if !exists || password == "" {
 		fmt.Println("Variável de ambiente BREVO_APIKEY não está definida ou está vazia!")
-		log.Fatal("Variável não definida! Não posso continuar.")
+		if paraExecucao {
+			log.Fatal("Variável não definida! Não posso continuar.")
+		}
 	} else {
 		fmt.Println("Variável de ambiente BREVO_APIKEY está definida.")
 		// Use a senha aqui
@@ -259,13 +267,42 @@ func enviaEmail() {
 	return
 }
 
+func getInterfaceAddres() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		panic(err)
+	}
+	ips := ""
+	for _, addr := range addrs {
+		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				//log.Println(ipnet.IP.String())
+				ips = ips + ipnet.IP.String() + ", "
+			}
+		}
+	}
+	return ips
+}
+
 func main() {
 
+	// mostra dados do app
+	log.Printf("APP: %s, version: %s\n", app_name, app_version)
+
+	// current path
+	cwd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	log.Println("Current path:", cwd)
+
+	paraExecucao := cwd == app_dev_path
+
 	// load secrets
-	getSegredos()
+	getSegredos(paraExecucao)
 
+	// iniciando o servidor
 	be := &Backend{}
-
 	s := smtp.NewServer(be)
 
 	s.Addr = ":1025"
@@ -275,6 +312,7 @@ func main() {
 	s.MaxMessageBytes = 1024 * 1024
 	s.MaxRecipients = 50
 	s.AllowInsecureAuth = false
+	log.Printf("Starting server at %s\n", s.Addr)
 
 	globalEmailData = EmailData{
 		host:       "https://api.brevo.com/v3/smtp/email",
@@ -289,11 +327,9 @@ func main() {
 		byPassAuth: true,
 	}
 
-	globalEmailData.Content = "Teste de envio de e-mail"
-
 	//enviaEmail()
 
-	log.Println("Starting server at", s.Addr)
+	log.Println("Interfaces: ", getInterfaceAddres())
 	if err := s.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
