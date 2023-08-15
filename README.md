@@ -11,7 +11,7 @@ For example, if you have an application installed on your server that uses the S
 To install smtp2api, you can use the following command:
 
 ```
-go get github.com/bravocode/smtp2api
+go get github.com/dmslabsbr/smtp2api
 ```
 
 You need to set BREVO_APIKEY as enviromment variable.
@@ -19,6 +19,16 @@ You need to set BREVO_APIKEY as enviromment variable.
 ```
 export BREVO_APIKEY=<your_brevo_api_key>
 ```
+### Docker
+
+ Build the image
+```
+docker build -t smtp2api .
+```
+
+ Run the image
+
+ 
 
 ## Documentation
 The documentation for smtp2api is available at the following link:

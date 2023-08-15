@@ -50,7 +50,7 @@ func getSegredos() {
 		fmt.Println("Variável de ambiente BREVO_APIKEY não está definida ou está vazia!")
 		log.Fatal("Variável não definida! Não posso continuar.")
 	} else {
-		fmt.Println("Variável de ambiente DATABASE_PASSWORD está definida.")
+		fmt.Println("Variável de ambiente BREVO_APIKEY está definida.")
 		// Use a senha aqui
 		globalSegredos.brevoApiKey=password
 	}
@@ -298,3 +298,7 @@ func main() {
 		log.Fatal(err)
 	}
 }
+
+
+//todo verificar domínio do e-mail para evitar span
+//todo colocar como parametro a porte do servidor, endereço da api.

@@ -1,4 +1,4 @@
-module teste
+module smtp2api
 
 go 1.21.0
 
