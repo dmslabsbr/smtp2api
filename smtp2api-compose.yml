@@ -1,0 +1,11 @@
+version: '3.8'
+# Carrega o SMTP2API e o supabase
+# use docker compose -f smtp2api-compose.yml -f supabase-compose.yml up
+name: supabase-suplan
+services:
+  smtp2api:
+    image: dmslabsbr/smtp2api:latest
+    restart: unless-stopped
+    environment:
+      BREVO_APIKEY: ${BREVO_APIKEY}
+

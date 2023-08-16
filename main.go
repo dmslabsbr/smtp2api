@@ -22,7 +22,7 @@ import (
 
 // Contantes
 const app_name = "smtp2api"
-const app_version = "1.0"
+const app_version = "1.01"
 const app_dev_path = `D:\go\apps_src\smtp2api`
 
 // The Backend implements SMTP server methods.

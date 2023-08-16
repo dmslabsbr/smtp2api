@@ -1,0 +1,11 @@
+version: '3.8'
+# Carrega o SMTP2API e o supabase
+# Não funciona
+name: supabase-suplan
+services:
+  smtp2api:
+    image: dmslabsbr/smtp2api:latest
+    restart: unless-stopped
+    extends: 
+      file: supabase-compose.yml
+      service: studio

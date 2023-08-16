@@ -28,7 +28,11 @@ docker build -t smtp2api .
 
  Run the image
 
- 
+### Get image from hub.docker.com
+
+```
+docker pull dmslabsbr/smtp2api:latest
+```
 
 ## Documentation
 The documentation for smtp2api is available at the following link:
