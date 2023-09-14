@@ -22,8 +22,11 @@ import (
 
 // Contantes
 const app_name = "smtp2api"
-const app_version = "1.01"
+const app_version = "1.05"
 const app_dev_path = `D:\go\apps_src\smtp2api`
+
+const cfg_subst_de = "href=3D"
+const cfg_subst_para = "href="
 
 // The Backend implements SMTP server methods.
 type Backend struct{}
@@ -48,20 +51,52 @@ type segredosType struct {
 var globalEmailData EmailData
 var globalSegredos segredosType
 
+var cfg_muda_depPara = map[string]string{
+	`href=3D\`:"href=",
+	`\r\n`:"",
+	"&amp;":"&",
+	"3Dmagiclink":"magiclink",
+	"token=3D":"token=",
+
+	`3Dhttp:=\n`:"http:",
+	"3Dhttp:=":"http:",
+	"\n":"",
+	"kong":"app.suplan.app.br:3000",
+}
+
+// substitui varios elementos
+
+func ReplaceMultiple(original string, replacements map[string]string) string {
+	for from, to := range replacements {
+		original = strings.ReplaceAll(original, from, to)
+	}
+	return original
+}
 
 // pega segredos das variaveis de ambiente
 func getSegredos(paraExecucao bool) {
 	password, exists := os.LookupEnv("BREVO_APIKEY")
 	if !exists || password == "" {
-		fmt.Println("Variável de ambiente BREVO_APIKEY não está definida ou está vazia!")
-		if paraExecucao {
-			log.Fatal("Variável não definida! Não posso continuar.")
+
+		if len(os.Args) > 1 {
+			arg := os.Args[1]
+			fmt.Println("Parametro:" , arg)
+			if arg!="" {
+				password = arg
+				fmt.Println("Usando parametro recebido")
+			} else {
+				fmt.Println("Variável de ambiente BREVO_APIKEY não está definida ou está vazia!")
+				fmt.Println("Use, $BREVO_APIKEY='key'")
+				if paraExecucao {
+					log.Fatal("Variável não definida! Não posso continuar.")
+				}
+			}
 		}
 	} else {
 		fmt.Println("Variável de ambiente BREVO_APIKEY está definida.")
-		// Use a senha aqui
-		globalSegredos.brevoApiKey=password
 	}
+	// Use a senha aqui
+	globalSegredos.brevoApiKey=password
 }
 
 func (bkd *Backend) NewSession(_ *smtp.Conn) (smtp.Session, error) {
@@ -118,6 +153,9 @@ func (s *Session) Data(r io.Reader) error {
 	} else {
 		log.Println("Data:", string(b))
 		globalEmailData.Content = string(b)
+		//globalEmailData.Content = strings.Replace(globalEmailData.Content, cfg_subst_de, cfg_subst_para, -1)
+		globalEmailData.Content = ReplaceMultiple(globalEmailData.Content, cfg_muda_depPara)
+		fmt.Println("emailData:", globalEmailData.Content)
 		enviaEmail()
 	}
 	return nil

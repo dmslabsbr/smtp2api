@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# v 18-08-2023
+
 if [ "$#" -ne 2 ]; then
     echo "Uso: $0 nome_do_container nome_da_rede"
     return 1
@@ -24,6 +26,8 @@ if [ $CONTAINER_EXISTS -eq 0 ]; then
       echo -e "O nome da rede é " "\033[0;35m${NETWORK_NAME}\033[0m"
       # Salva o nome da rede em uma variável
       export DOCKER_CONTAINER_NETWORK=$NETWORK_NAME
+      DOCKER_CONTAINER_NETWORK=$NETWORK_NAME
+      set DOCKER_CONTAINER_NETWORK=$NETWORK_NAME
       echo -e '\033[0;32m$DOCKER_CONTAINER_NETWORK:\033[0m'  $DOCKER_CONTAINER_NETWORK
       return 0
     else
@@ -35,6 +39,10 @@ else
     echo -e "O container" "\033[0;33m${CONTAINER_NAME}\033[0m" não encontrado. Criando rede "\033[0;36m${NETWORK_NAME}\033[0m"
     docker network create $NETWORK_NAME
     export DOCKER_CONTAINER_NETWORK=$NETWORK_NAME
+    DOCKER_CONTAINER_NETWORK=$NETWORK_NAME
     echo -e '\033[0;32m$DOCKER_CONTAINER_NETWORK:\033[0m'  $DOCKER_CONTAINER_NETWORK
     return 1
 fi
+
+return $DOCKER_CONTAINER_NETWORK
+
